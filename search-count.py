@@ -12,6 +12,7 @@ import urllib2
 import re
 import time
 import random
+import argparse
 from bs4 import BeautifulSoup
 
 reload(sys)
@@ -43,15 +44,20 @@ def search_baidu(word):
     return re.findall('[0-9,]+',
                       soup.find('div', class_="nums").get_text())[0]
 
-if len(sys.argv) <= 1:
-    sys.stderr.write(' '.join(['python', sys.argv[0],
-                               'word.txt', '[word.baidu.txt]']) + '\n')
-    sys.exit(0)
-else:
-    word_file = sys.argv[1]
-    word_out_file = None
-    if len(sys.argv) > 2:
-        word_out_file = sys.argv[2]
+parser = argparse.ArgumentParser(description='Search & Count')
+parser.add_argument('-i', '--input',
+                    help='input file')
+parser.add_argument('-o', '--output',
+                    help='output file',
+                    default='-')
+parser.add_argument('-s', '--source',
+                    help='search engine',
+                    type=str, choices=['baidu'],
+                    default='baidu')
+args = parser.parse_args()
+
+word_file = args.input
+word_out_file = args.output
 
 with open(word_file, 'r') as word_file:
     while True:
@@ -60,7 +66,7 @@ with open(word_file, 'r') as word_file:
             break
         word = line.strip()
         word_baidu_res = search_baidu(word)
-        if word_out_file is None:
+        if word_out_file == '-':
             print word,word_baidu_res
         else:
             with open(word_out_file, 'a') as out_file:
