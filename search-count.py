@@ -46,6 +46,7 @@ def search_baidu(word):
 
 parser = argparse.ArgumentParser(description='Search & Count')
 parser.add_argument('-i', '--input',
+                    required=True,
                     help='input file')
 parser.add_argument('-o', '--output',
                     help='output file',
