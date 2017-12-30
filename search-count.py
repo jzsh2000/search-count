@@ -44,6 +44,30 @@ def search_baidu(word):
     return re.findall('[0-9,]+',
                       soup.find('div', class_="nums").get_text())[0]
 
+def search_bing(word):
+    ''' search word in cn.bing.com '''
+    data = urllib.urlencode({'q': word})
+    request = urllib2.Request('http://cn.bing.com/search?' + data)
+
+    retry_count = 0
+    while True:
+        try:
+            response = urllib2.urlopen(request, timeout = 1)
+            soup = BeautifulSoup(response.read(), "html.parser")
+        except socket.timeout:
+            time.sleep(8 + 2 * random.random())
+            retry_count += 1
+        except urllib2.HTTPError:
+            return 'error'
+        except httplib.IncompleteRead:
+            time.sleep(3 + 2 * random.random())
+            retry_count += 1
+        else:
+            break
+
+    return re.findall('[0-9,]+',
+                      soup.find('span', class_="sb_count").get_text())[0]
+
 parser = argparse.ArgumentParser(description='Search & Count')
 parser.add_argument('-i', '--input',
                     required=True,
@@ -53,7 +77,7 @@ parser.add_argument('-o', '--output',
                     default='-')
 parser.add_argument('-s', '--source',
                     help='search engine',
-                    type=str, choices=['baidu'],
+                    type=str, choices=['baidu', 'bing'],
                     default='baidu')
 args = parser.parse_args()
 
@@ -65,11 +89,16 @@ with open(word_file, 'r') as word_file:
         line = word_file.readline()
         if not line:
             break
+
         word = line.strip()
-        word_baidu_res = search_baidu(word)
+        if args.source == 'bing':
+            word_res = search_bing(word)
+        else:
+            word_res = search_baidu(word)
+
         if word_out_file == '-':
-            print word,word_baidu_res
+            print word,word_res
         else:
             with open(word_out_file, 'a') as out_file:
-                out_file.write(word + ' ' + word_baidu_res + '\n')
+                out_file.write(word + ' ' + word_res + '\n')
 
