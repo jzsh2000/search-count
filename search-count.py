@@ -44,9 +44,13 @@ def search_baidu(word):
     return re.findall('[0-9,]+',
                       soup.find('div', class_="nums").get_text())[0]
 
-def search_bing(word):
+def search_bing(word, english=False):
     ''' search word in cn.bing.com '''
-    data = urllib.urlencode({'q': word})
+    if english:
+        data = urllib.urlencode({'q': word, 'ensearch':1})
+    else:
+        data = urllib.urlencode({'q': word})
+
     request = urllib2.Request('http://cn.bing.com/search?' + data)
 
     retry_count = 0
@@ -79,6 +83,9 @@ parser.add_argument('-s', '--source',
                     help='search engine',
                     type=str, choices=['baidu', 'bing'],
                     default='baidu')
+parser.add_argument('-e', '--english',
+                    help='English search',
+                    action='store_true')
 args = parser.parse_args()
 
 word_file = args.input
@@ -92,7 +99,10 @@ with open(word_file, 'r') as word_file:
 
         word = line.strip()
         if args.source == 'bing':
-            word_res = search_bing(word)
+            if args.english:
+                word_res = search_bing(word, english=True)
+            else:
+                word_res = search_bing(word)
         else:
             word_res = search_baidu(word)
 
