@@ -1,5 +1,6 @@
 search-count
 ============
+Get number of results returned by each search engine ([bing](https://cn.bing.com/) and [baidu](https://www.baidu.com/)).
 
 Usage
 -----
